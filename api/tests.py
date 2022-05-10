@@ -1,5 +1,6 @@
 import json
 from api.models import Project, Devices, DeviceAPIKeys, ProjectMembership, ProjectMembershipAPIKeys, Releases
+from api.views import DEVICE_ERROR_MSG, MEMBER_ERROR_MSG
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -9,13 +10,8 @@ client = Client()
 
 class ReleaseApiTest(TestCase):
     """ Test module for API """
-    device_error = {
-        'success': False, 'error': 'Device object does not exist'
-    }
-
-    member_error = {
-        'success': False, 'error': 'Member object does not exist'
-    }
+    device_error = {'success': False, 'error': DEVICE_ERROR_MSG}
+    member_error = {'success': False, 'error': MEMBER_ERROR_MSG}
 
     def setUp(self):
         self.mars = Project.objects.create(name='mars')

@@ -7,6 +7,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 
+DEVICE_ERROR_MSG = 'Device object does not exist'
+MEMBER_ERROR_MSG = 'Member object does not exist'
+
+
 class ReleaseApiView(GenericViewSet):
 
     @staticmethod
@@ -52,8 +56,7 @@ class ReleaseApiView(GenericViewSet):
         """ Firmware updated event """
         device = self.get_device(request)
         if not device:
-            return Response({'success': False, 'error': 'Device object does not exist'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'error': DEVICE_ERROR_MSG}, status=status.HTTP_400_BAD_REQUEST)
 
         version_id = Releases.objects.aggregate(max_date=Max('date_created'))
         version = Releases.objects.filter(device_id=device.id, date_created=version_id['max_date'])
@@ -64,13 +67,11 @@ class ReleaseApiView(GenericViewSet):
     def get_versions_list(self, request, *args, **kwargs):
         """ List of firmware events per device """
         if not self.member_exists(request):
-            return Response({'success': False, 'error': 'Member object does not exist'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'error': MEMBER_ERROR_MSG}, status=status.HTTP_400_BAD_REQUEST)
 
         device = self.get_device(request)
         if not device:
-            return Response({'success': False, 'error': 'Device object does not exist'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({'success': False, 'error': DEVICE_ERROR_MSG}, status=status.HTTP_400_BAD_REQUEST)
 
         versions = Releases.objects.filter(device_id=device.id).order_by('date_created')
         versions = serializers.serialize('json', versions)
