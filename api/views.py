@@ -3,6 +3,7 @@ from django.core import serializers
 from django.db.models import Max
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -14,7 +15,7 @@ MEMBER_ERROR_MSG = 'Member object does not exist'
 class ReleaseApiView(GenericViewSet):
 
     @staticmethod
-    def check_device(device_id, device_key, project_name):
+    def check_device(device_id: int, device_key: str, project_name: str) -> (Devices | None):
         device_key = DeviceAPIKeys.objects.filter(device_id=device_id, key=device_key).first()
         if not device_key:
             return
@@ -25,7 +26,7 @@ class ReleaseApiView(GenericViewSet):
 
         return device_obj
 
-    def get_device(self, request):
+    def get_device(self, request: Request) -> (Devices | None):
         params = request.query_params
         device_id = params.get('device_id')
         device_key = params.get('device_key')
@@ -33,7 +34,7 @@ class ReleaseApiView(GenericViewSet):
         return self.check_device(device_id, device_key, project_name)
 
     @staticmethod
-    def check_member(member_name, member_key, project_name):
+    def check_member(member_name: str, member_key: str, project_name: str) -> (None | bool):
         member_key = ProjectMembershipAPIKeys.objects.filter(member__name=member_name, key=member_key).first()
         if not member_key:
             return
@@ -44,7 +45,7 @@ class ReleaseApiView(GenericViewSet):
 
         return True
 
-    def member_exists(self, request):
+    def member_exists(self, request: Request) -> (None | bool):
         params = request.query_params
         member_name = params.get('member_name')
         member_key = params.get('member_key')
@@ -52,7 +53,7 @@ class ReleaseApiView(GenericViewSet):
         return self.check_member(member_name, member_key, project_name)
 
     @action(detail=False)
-    def get_version(self, request, *args, **kwargs):
+    def get_version(self, request: Request) -> Response:
         """ Firmware updated event """
         device = self.get_device(request)
         if not device:
@@ -64,7 +65,7 @@ class ReleaseApiView(GenericViewSet):
         return Response(version, status=status.HTTP_200_OK, content_type='application/json')
 
     @action(detail=False)
-    def get_versions_list(self, request, *args, **kwargs):
+    def get_versions_list(self, request: Request) -> Response:
         """ List of firmware events per device """
         if not self.member_exists(request):
             return Response({'success': False, 'error': MEMBER_ERROR_MSG}, status=status.HTTP_400_BAD_REQUEST)
